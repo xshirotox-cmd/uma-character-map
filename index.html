@@ -93,7 +93,7 @@ function recompute(){
   const conn = nodes.filter(n=>n.vdeg>0).length;
   document.getElementById('stat').innerHTML =
     `<b>${conn}</b> connected · <b>${links.length}</b> links · <b>${roots.size}</b> separate web${roots.size===1?'':'s'}`;
-  alpha = Math.max(alpha, .9);
+  alpha = Math.max(alpha, .5);
 }
 const radius = n => 3.5 + Math.sqrt(n.vdeg)*0.85;
 
@@ -107,7 +107,7 @@ function step(){
       const b=nodes[j]; if(b.vdeg===0 && b!==selNode) continue;
       let dx=a.x-b.x, dy=a.y-b.y, d2=dx*dx+dy*dy+0.01;
       if(d2>90000) continue;
-      const f=2600/d2, d=Math.sqrt(d2); dx/=d; dy/=d;
+      const f=Math.min(45,2600/d2), d=Math.sqrt(d2); dx/=d; dy/=d;
       a.vx+=dx*f; a.vy+=dy*f; b.vx-=dx*f; b.vy-=dy*f;
     }
   }
@@ -124,9 +124,11 @@ function step(){
     n.vx += (cx-n.x)*0.0016; n.vy += (cy-n.y)*0.0016;
     if(n===dragNode) continue;
     n.vx*=0.86; n.vy*=0.86;
+    const sp=Math.sqrt(n.vx*n.vx+n.vy*n.vy), MAX=22;   // cap speed so a big slider jump can't fling nodes
+    if(sp>MAX){ n.vx*=MAX/sp; n.vy*=MAX/sp; }
     n.x += n.vx*alpha*2.2; n.y += n.vy*alpha*2.2;
   }
-  alpha *= 0.985;
+  alpha *= 0.975;
 }
 
 // ---- render ----
